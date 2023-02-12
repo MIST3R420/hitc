@@ -1,0 +1,80 @@
+server:
+  configEnabled: true
+  config:
+    repositories: |
+      - type: git
+        url: https://github.com/arch-69/hitc.git
+      - name: argo-helm
+        type: helm
+        url: https://argoproj.github.io/argo-helm
+  additionalApplications:
+    - name: argocd
+      namespace: argocd
+      destination:
+        namespace: argocd
+        server: https://kubernetes.default.svc
+      project: argocd
+      source:
+        helm:
+          version: v3
+          valueFiles:
+            - values.yaml
+            - values-override.yaml
+        path: infra/argo-helm/charts/argo-cd
+        directory:
+          recurse: true
+        repoURL: https://github.com/arch-69/hitc.git
+        targetRevision: HEAD
+      syncPolicy:
+        syncOptions:
+          - CreateNamespace=true
+#    - name: argocd-apps
+#      namespace: argocd
+#      destination:
+#        namespace: argocd
+#        server: https://kubernetes.default.svc
+#      project: argocd
+#      source:
+#        path: argocd-apps
+#        repoURL: https://github.com/arch-69/hitc.git
+#        targetRevision: HEAD
+#        directory:
+#          recurse: true
+#          jsonnet: {}
+#      syncPolicy:
+#        automated:
+#          selfHeal: true
+#          prune: true
+#    - name: argocd-appprojects
+#      namespace: argocd
+#      destination:
+#        namespace: argocd
+#        server: https://kubernetes.default.svc
+#      project: argocd
+#      source:
+#        path: argocd-appprojects
+#        repoURL: https://github.com/kurtburak/argocd.git
+#        targetRevision: HEAD
+#        directory:
+#          recurse: true
+#          jsonnet: {}
+#      syncPolicy:
+#        automated:
+#          selfHeal: true
+#          prune: true
+  additionalProjects:
+    - name: argocd
+      namespace: argocd
+      additionalLabels: {}
+      additionalAnnotations: {}
+      description: vwashere
+      sourceRepos:
+        - '*'
+      destinations:
+        - namespace: argocd
+          server: https://kubernetes.default.svc
+      clusterResourceWhitelist:
+        - group: '*'
+          kind: '*'
+      orphanedResources:
+        warn: false
