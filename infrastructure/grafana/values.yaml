@@ -277,7 +277,22 @@ topologySpreadConstraints: []
 ## Additional init containers (evaluated as template)
 ## ref: https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
 ##
-extraInitContainers: []
+extraInitContainers:
+  - name: git-clone-mongodb-grafana-plugin
+    image: alpine/git
+    args:
+      - clone
+      - --single-branch
+      - --branch=master
+      - --depth=1
+      - --
+      - https://github.com/JamesOsgood/mongodb-grafana.git
+      - /var/lib/grafana/plugins
+    securityContext:
+      runAsUser: 0
+#    volumeMounts:
+#      - name: plugins
+#        mountPath: /var/lib/grafana/plugins
 
 ## Enable an Specify container in extraContainers. This is meant to allow adding an authentication proxy to a grafana pod
 extraContainers: ""
@@ -485,6 +500,14 @@ extraSecretMounts: []
 ## Additional grafana server volume mounts
 # Defines additional volume mounts.
 extraVolumeMounts: []
+#  - name: plugins
+#    mountPath: /var/lib/grafana/plugins
+#    hostPath: plugins
+#    readOnly: false
+#  - name: dashboards
+#    mountPath: /var/lib/grafana/dashboards
+#    hostPath: dashboards
+#    readOnly: false
   # - name: extra-volume-0
   #   mountPath: /mnt/volume0
   #   readOnly: true
@@ -510,8 +533,8 @@ lifecycleHooks: {}
 ## Pass the plugins you want installed as a list.
 ##
 plugins: [
-  ayoungprogrammer-finance-datasource,
-  clarity89-finnhub-datasource
+#  ayoungprogrammer-finance-datasource,
+#  clarity89-finnhub-datasource
 ]
   # - digrich-bubblechart-panel
   # - grafana-clock-panel

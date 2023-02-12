@@ -1,5 +1,5 @@
 #!/bin/sh
-
+. ./common.sh
 ns=$1
 echo
 info "Deleting namespace \"${ns:?}\" and its finalizers"

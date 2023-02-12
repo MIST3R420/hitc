@@ -185,10 +185,26 @@ deploy_strimzi() {
     --namespace strimzi \
     --create-namespace --cleanup-on-fail --atomic \
     --wait --timeout 10m --debug || exit
+  # deploying kafka
   kubectl create ns kafka
   kubectl apply -f infrastructure/strimzi-kafka-operator/examples/kafka/kafka-persistent.yaml --namespace kafka
 #  kubectl create ns kafka-connect
 #  kubectl apply -f infrastructure/strimzi-kafka-operator/examples/connect/kafka-connect.yaml --namespace kafka-connect
+}
+
+deploy_ssr() {
+  # step 1: deploy ssr operator in its own namespace (strimzi-registry-operator)
+  helm repo add lsstsqre https://lsst-sqre.github.io/charts/
+  helm repo update
+  helm upgrade --install strimzi-registry-operator lsstsqre/strimzi-registry-operator \
+    --namespace strimzi-registry-operator --create-namespace \
+    --set operatorNamespace="strimzi-registry-operator" \
+    --set clusterNamespace="kafka" \
+    --set clusterName="my-cluster"
+  # step 2: deploy ssr resources in the Kafka cluster namespace
+  kubectl apply -f infrastructure/strimzi-kafka-operator/examples/registry-operator/registry-schemas-topic.yaml -n kafka
+  kubectl apply -f infrastructure/strimzi-kafka-operator/examples/registry-operator/confluent-schema-registry-user.yaml -n kafka
+  kubectl apply -f infrastructure/strimzi-kafka-operator/examples/registry-operator/strimzi-schema-registry.yaml -n kafka
 }
 
 deploy_mongodb() {
@@ -203,6 +219,17 @@ deploy_mongodb() {
   kubectl get secret vip-password -n mongodb \
     -o json | jq -r '.data | with_entries(.value |= @base64d)'
 
+}
+
+deploy_chartmuseum() {
+  helm repo add chartmuseum https://chartmuseum.github.io/charts
+  helm install chartmuseum chartmuseum/chartmuseum --version 3.9.3
+  helm search repo chartmuseum/chartmuseum
+  helm upgrade --install chartmuseum chartmuseum/chartmuseum \
+    --set env.open.DISABLE_API=false \
+    --namespace chartmuseum \
+    --create-namespace \
+    --wait --timeout 10m --debug
 }
 
 #
@@ -220,12 +247,14 @@ deploy_mongodb() {
 #deploy_argocd_helm
 #stop_namespace "argocd"
 #deploy_jenkins
-#wipe_namespace mongodb
+#wipe_namespace
 #wipe_namespace "kafka"
 #kubectl apply -f infrastructure/strimzi-kafka-operator/examples/kafka/kafka-persistent.yaml --namespace kafka
 #wipe_namespace strimzi
 #wipe_pvc_pv grafana
 #deploy_grafana
-deploy_mongodb
+#deploy_mongodb
 #deploy_strimzi
 #deploy_zookeeper
+#wipe_crb_cr strimzi
+eval "$@"
