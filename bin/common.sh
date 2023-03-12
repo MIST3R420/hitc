@@ -176,17 +176,15 @@ deploy_strimzi() {
   helm repo add strimzi https://strimzi.io/charts/ --force-update
   helm repo update
   helm search repo strimzi
-  kubectl create ns strimzi
+  kubectl create ns operators
   helm upgrade --install strimzi strimzi/strimzi-kafka-operator \
-    -f infra/strimzi-kafka-operator/values.yaml \
-    --namespace strimzi \
+    --namespace operators \
     --create-namespace --cleanup-on-fail --atomic \
     --wait --timeout 10m --debug || exit
   # deploying kafka
-  kubectl create ns kafka
-  kubectl apply -f infra/strimzi-kafka-operator/examples/kafka/kafka-persistent.yaml --namespace kafka
-#  kubectl create ns kafka-connect
-#  kubectl apply -f infra/strimzi-kafka-operator/examples/connect/kafka-connect.yaml --namespace kafka-connect
+  kubectl create ns strimzi
+  kubectl apply -f infra/strimzi/kafka/cluster.yaml --namespace strimzi
+  kubectl apply -f infra/strimzi/kafka-connect/cluster.yaml --namespace strimzi
 }
 
 deploy_mongodb() {
