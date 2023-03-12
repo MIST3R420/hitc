@@ -12,7 +12,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
-                sh ./bin/common.sh deploy_strimzi
+                sh "./bin/common.sh deploy_strimzi"
             }
         }
         stage('Deploy') {
