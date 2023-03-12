@@ -1,0 +1,6 @@
+FROM quay.io/strimzi/kafka:0.33.1-kafka-3.3.2
+USER root:root
+RUN mkdir -p /opt/kafka/plugins/debezium
+COPY ./debezium-connector-postgres/ /opt/kafka/plugins/debezium/
+COPY ./apicurio-registry-distro-connect-converter/*.jar /opt/kafka/libs/
+USER 1001
