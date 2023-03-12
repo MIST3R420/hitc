@@ -1,0 +1,69 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: connect-user
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  authentication:
+    type: tls
+  # Use the same authorization type as Kafka CR defined
+  authorization:
+    type: simple
+    acls:
+      # Kafka Connects internal topics used to store configuration, offsets or status
+      # For each internal topic, there are four operations: Read, Describe, Write, Create
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-configs
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-status
+        operation: Create
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Read
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Write
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Describe
+      - resource:
+          type: topic
+          name: connect-cluster-offsets
+        operation: Create
+      - resource:
+          type: group
+          name: kafka-connect-vip
+          patternType: literal
+        operation: Read

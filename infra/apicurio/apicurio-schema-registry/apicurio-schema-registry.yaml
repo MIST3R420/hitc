@@ -1,0 +1,13 @@
+apiVersion: registry.apicur.io/v1
+kind: ApicurioRegistry
+metadata:
+  name: apicurio-schema-registry
+spec:
+  configuration:
+    persistence: "kafkasql"
+    kafkasql:
+      bootstrapServers: "strimzi-vip-kafka-bootstrap:9093"
+      security:
+        tls:
+          keystoreSecretName: registry-user
+          truststoreSecretName: strimzi-vip-cluster-ca-cert

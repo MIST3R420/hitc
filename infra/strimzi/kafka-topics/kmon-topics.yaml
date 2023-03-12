@@ -1,0 +1,130 @@
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: vip-sink-connector-errors
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  config:
+    cleanup.policy: delete
+    delete.retention.ms: "2592000000" # 30days
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-quantity-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-flat-quantity-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-nominal-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-flat-nominal-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-nominal-parameter
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+  config:
+    cleanup.policy: compact,delete
+    min.compaction.lag.ms: 600000
+    max.compaction.lag.ms: 43200000 #12 hours
+    segment.ms: 43200000 # 12h
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-quantity-parameter
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+  config:
+    cleanup.policy: compact,delete
+    min.compaction.lag.ms: 600000
+    max.compaction.lag.ms: 43200000 #12 hours
+    segment.ms: 43200000 # 12h
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-normalized-quantity-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-events
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-rejected-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-kmfs-data
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kafka-health-indicator
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 3
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: kmon-v1-raw-specif
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  partitions: 30
+---

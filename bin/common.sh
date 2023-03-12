@@ -100,7 +100,12 @@ delete_cert_manager() {
   helm --namespace cert-manager delete cert-manager
 }
 
-start_cluster_3_node() {
+start_m2n() {
+  clustername="minikube-2-node"
+  minikube start --nodes 2 -p $clustername
+}
+
+start_m3n() {
   clustername="minikube-3-node"
   minikube start --nodes 3 -p $clustername
 }
@@ -119,10 +124,10 @@ deploy_argocd() {
   info "Creating namespace \"${ns:?}\""
   kubectl create ns "${ns:?}"
   echo
+#    -f infra/argo-helm/charts/argo-cd/values.yaml \
+#    -f infra/argo-helm/charts/argo-cd/values-override.yaml \
   info "Installing from helm chart"
   helm upgrade --install "${ns:?}" argo/argo-cd \
-    -f infra/argo-helm/charts/argo-cd/values.yaml \
-    -f infra/argo-helm/charts/argo-cd/values-override.yaml \
     --version 5.17.4 \
     --namespace "${ns:?}" \
     --create-namespace \
@@ -135,19 +140,16 @@ deploy_argocd() {
   kubectl port-forward svc/argocd-server -n "${ns:?}" 8069:443 &
 }
 
-deploy_jenkins() {
-  kubectl create ns "jenkins"
-  helm repo add jenkins https://charts.jenkins.io --force-update
-  helm repo update
-  helm search repo jenkins/jenkins
-  helm upgrade --install jenkins jenkins/jenkins \
-    -f infra/jenkins-helm/charts/jenkins/values.yaml \
-    --namespace jenkins \
-    --create-namespace \
-    --wait --timeout 10m --debug
-  kubectl exec --namespace jenkins -it svc/jenkins -c jenkins -- /bin/cat /run/secrets/additional/chart-admin-password && echo
-  echo http://127.0.0.1:8068
-  kubectl --namespace jenkins port-forward svc/jenkins 8068:8080
+deploy_jenkins_operator() {
+  kubectl create ns operators
+  kubectl create ns devops-tools
+  kubectl apply -f infra/jenkins/jenkins-operator/pv.yaml
+  helm repo add jenkins https://raw.githubusercontent.com/jenkinsci/kubernetes-operator/master/chart
+  helm upgrade --install jenkins-operator jenkins/jenkins-operator \
+  -f infra/jenkins/jenkins-operator/vip-values.yaml \
+  -n operators \
+  --create-namespace
+  kubectl --namespace devops-tools port-forward jenkins-vip 8068:8080
 }
 
 deploy_grafana() {
@@ -187,21 +189,6 @@ deploy_strimzi() {
 #  kubectl apply -f infra/strimzi-kafka-operator/examples/connect/kafka-connect.yaml --namespace kafka-connect
 }
 
-deploy_ssr() {
-  # step 1: deploy ssr operator in its own namespace (strimzi-registry-operator)
-  helm repo add lsstsqre https://lsst-sqre.github.io/charts/
-  helm repo update
-  helm upgrade --install strimzi-registry-operator lsstsqre/strimzi-registry-operator \
-    --namespace strimzi-registry-operator --create-namespace \
-    --set operatorNamespace="strimzi-registry-operator" \
-    --set clusterNamespace="kafka" \
-    --set clusterName="my-cluster"
-  # step 2: deploy ssr resources in the Kafka cluster namespace
-  kubectl apply -f infra/strimzi-kafka-operator/examples/registry-operator/registry-schemas-topic.yaml -n kafka
-  kubectl apply -f infra/strimzi-kafka-operator/examples/registry-operator/confluent-schema-registry-user.yaml -n kafka
-  kubectl apply -f infra/strimzi-kafka-operator/examples/registry-operator/strimzi-schema-registry.yaml -n kafka
-}
-
 deploy_mongodb() {
   helm repo add mongodb https://mongodb.github.io/helm-charts
   helm install mongodb-community-operator mongodb/community-operator
@@ -228,6 +215,10 @@ deploy_chartmuseum() {
     --wait --timeout 10m --debug
 }
 
+deploy_apicurio_schema_registry() {
+  minikube addons enable ingress
+  kubectl create namespace "operators"
+}
 #
 #deploy_mongodb() {
 #  helm repo add bitnami https://charts.bitnami.com/bitnami

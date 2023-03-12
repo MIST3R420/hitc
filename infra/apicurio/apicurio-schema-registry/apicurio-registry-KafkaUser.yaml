@@ -1,0 +1,46 @@
+#---
+#apiVersion: kafka.strimzi.io/v1beta1
+#kind: KafkaTopic
+#metadata:
+#  name: kafkasql-journal
+#  labels:
+#    strimzi.io/cluster: strimzi-vip
+#spec:
+#  partitions: 1
+#  replicas: 2
+#  config:
+#    cleanup.policy: compact
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaUser
+metadata:
+  name: registry-user
+  labels:
+    strimzi.io/cluster: strimzi-vip
+spec:
+  authentication:
+    type: tls
+  authorization:
+    acls:
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: topic
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: cluster
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: transactionalId
+      - operation: All
+        resource:
+          name: '*'
+          patternType: literal
+          type: group
+    type: simple
+

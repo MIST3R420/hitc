@@ -1,0 +1,94 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnect
+metadata:
+  name: kafka-connect-vip
+#  annotations:
+#    strimzi.io/use-connector-resources: "true"
+spec:
+#  image: kmon-net-ecr-registry-vpc.eu-central-1.cr.aliyuncs.com/kmon-net-cn/strimzi-kafka-connect:1
+#  image: debezium/connect:2.1.2.Final
+  image: codedroid/strimzi-kafka-connect:1
+  replicas: 1
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      memory: 2Gi
+  bootstrapServers: strimzi-vip-kafka-bootstrap:9093
+  tls:
+    trustedCertificates:
+      - secretName: strimzi-vip-cluster-ca-cert
+        certificate: ca.crt
+  authentication:
+    type: tls
+    certificateAndKey:
+      secretName: connect-user
+      certificate: user.crt
+      key: user.key
+#  metricsConfig:
+#    type: jmxPrometheusExporter
+#    valueFrom:
+#      configMapKeyRef:
+#        name: connect-metrics
+#        key: metrics-config.yml
+  config:
+    group.id: kafka-connect-vip
+    offset.storage.topic: connect-cluster-offsets
+    config.storage.topic: connect-cluster-configs
+    status.storage.topic: connect-cluster-status
+    config.storage.replication.factor: 1
+    offset.storage.replication.factor: 1
+    status.storage.replication.factor: 1
+    key.converter.schemas.enable: true
+    value.converter.schemas.enable: true
+
+    key.converter: io.apicurio.registry.utils.converter.AvroConverter
+    key.converter.apicurio.registry.url: http://apicurio-schema-registry-service:8080/apis/registry/v2
+    key.converter.apicurio.registry.auto-register: true
+    key.converter.apicurio.registry.find-latest: true
+    value.converter: io.apicurio.registry.utils.converter.AvroConverter
+    value.converter.apicurio.registry.url: http://apicurio-schema-registry-service:8080/apis/registry/v2
+    value.converter.apicurio.registry.auto-register: true
+    value.converter.apicurio.registry.find-latest: true
+    schema.name.adjustment.mode: avro
+
+  externalConfiguration:
+#    volumes:
+#      - name: connect-user
+#        secret:
+#          secretName: connect-user
+    env:
+#     The env var passed to the debezium/connect image to enable Apicurio converters.
+#      - name: ENABLE_APICURIO_CONVERTERS
+#        valueFrom:
+#          secretKeyRef:
+#            name: kafka-connect-properties
+#            key: enable_apicurio_converters
+#      - name: AWS_ACCESS_KEY_ID
+#        valueFrom:
+#          secretKeyRef:
+#            name: s3-datalake
+#            key: aws_access_key_id
+#      - name: AWS_SECRET_ACCESS_KEY
+#        valueFrom:
+#          secretKeyRef:
+#            name: s3-datalake
+#            key: aws_secret_access_key
+  logging:
+    type: inline
+    loggers:
+      connect.root.logger.level: "INFO"
+  jvmOptions:
+    "-Xmx": "1g"
+    "-Xms": "1g"
+#  template:
+#    pod:
+#      metadata:
+#        annotations:
+#          sidecar.istio.io/inject: "false"
+#          prometheus.io/scrape: 'true'
+#          prometheus.io/port: 'tcp-prometheus'
+#          prometheus.io/path: '/metrics'
+#      imagePullSecrets:
+#      - name: regcred-ecr
