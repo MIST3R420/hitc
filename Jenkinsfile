@@ -12,6 +12,7 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Testing..'
+                sh "chmod 755 bin/*.sh"
                 sh "./bin/common.sh deploy_strimzi"
             }
         }
